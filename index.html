@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ルークとじゃんけん</title>
+    <style>
+       
+        /* ヘッダー部分 */
+        header {
+            display: flex;
+            align-items: center; /* ロゴとテキストを垂直方向に中央揃え */
+            padding: 20px;
+            background-color: #f8f8f8;
+            margin-bottom: 20px;
+            background-image: url('img/haikei.jpg'); 
+            /* 背景画像を設定 */
+        }
+      
+        .header-text h1 {
+            margin: 0;
+            margin-left: 50px;
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .subtitle p {
+            margin: 5px 0; /* 段落の上下余白を調整 */
+            margin-left: 50px;
+            line-height: 1.5; /* 行間の調整 */
+            color: #333333;
+            font-weight: bold;
+        }
+
+        /* コンテナの設定 */
+        .container {
+            display: flex;
+            height: calc(100vh - 120px); /* ビューポートの高さを100%にし、ヘッダー分を引く */
+        }
+
+        /* 左側のじゃんけん用のセクション */
+        .janken-section {
+            width: 66.66%; /* 2/3の幅 */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start; /* 上寄せに変更 */
+            align-items: center;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+
+     
+
+        /* じゃんけんの選択肢 */
+        .choices {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .choices button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0;
+        }
+
+     
+        /* 結果表示部分 */
+        .result {
+            text-align: center;
+            margin: 20px;
+            font-size: 1.2em;
+        }
+
+        .result-photo {
+            width: 300px; /* 結果画像のサイズは任意で */
+            height: auto;
+            margin-top: 20px;
+            
+        }
+
+             /* 右側の結果表示用のセクション */
+             .result-section {
+            width: 33.33%; /* 1/3の幅 */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            background-color: #e0e0e0;
+            padding: 20px;
+            box-sizing: border-box; /* パディングとボーダーを含めた全体の幅と高さを計算 */
+    overflow: hidden; /* セクションからはみ出る要素を隠す */
+        }
+
+        .computer-choice-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .computer-choice-image {
+            width: 100px;
+            height: 100px;
+            display: none;
+        }
+
+        .computer-choice-text {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- ヘッダー -->
+    <header>
+        <img src="img/ロゴ.jpg" id="logo" alt="ロゴ">
+        <div class="header-text">
+            <h1>ルークとじゃんけん</h1>
+            <div class="subtitle">
+                <p>仕事にプログラミングにお疲れさまです。</p>
+                <p>我が家の癒しルークだらけのじゃんけんゲームで癒されてね。</p>
+                <p>勝ち負けあいこでそれぞれ３ショットルークがあるよ</p>
+            </div>
+        </div>
+    </header>
+  
+    <!-- メインコンテナ -->
+    <div class="container">
+        <!-- 左側: じゃんけんをする部分 -->
+         
+        <div class="janken-section">
+            <div class="choices">
+                 <div class="instruction">
+    </div>
+                
+                <button onclick="playGame('グー')">
+                    <img src="img/ぐー.jpg" alt="グー" class="choice-image">
+                    <span>グー</span>
+                </button>
+                <button onclick="playGame('チョキ')">
+                    <img src="img/ちょき.jpg" alt="チョキ" class="choice-image">
+                    <span>チョキ</span>
+                </button>
+                <button onclick="playGame('パー')">
+                    <img src="img/ぱー.jpg" alt="パー" class="choice-image">
+                    <span>パー</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- 右側: 結果表示部分 -->
+        <div class="result-section">
+            <div id="computerChoiceContainer" class="computer-choice-container">
+                
+                <p id="computerChoiceText" class="computer-choice-text"></p>
+            </div>
+            <div class="result">
+                <p id="message">結果は…</p>                
+               
+                <img id="resultImage" src="" alt="結果画像" class="result-photo">
+               
+            </div>
+        </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let winCount = 0;
+        let loseCount = 0;
+
+        // 勝ちの写真リスト
+        const winImages = ['img/kachi1.png', 'img/kachi2.png', 'img/kachi3.png'];
+
+        // 負けの写真リスト
+        const loseImages = ['img/make1.png', 'img/make2.png', 'img/make3.png'];
+
+        // あいこの写真リスト
+        const tieImages = ['img/aiko1.png', 'img/aiko2.png', 'img/aiko3.png'];
+
+        // ランダムに画像を選ぶ関数
+        function getRandomImage(images) {
+            const index = Math.floor(Math.random() * images.length);
+            return images[index];
+        }
+
+        function playGame(playerChoice) {
+            const choices = ['グー', 'チョキ', 'パー'];
+            const computerChoice = choices[Math.floor(Math.random() * 3)];
+            let message = '';
+
+            if (playerChoice == computerChoice) {
+                message = `あいこ！あなたもコンピュータも ${playerChoice} を選びました。`;
+                document.getElementById('resultImage').src = getRandomImage(tieImages); // あいこの場合の画像を表示
+            } else if (
+                (playerChoice == 'グー' && computerChoice == 'チョキ') ||
+                (playerChoice == 'チョキ' && computerChoice == 'パー') ||
+                (playerChoice == 'パー' && computerChoice == 'グー')
+            ) {
+                message = `勝ち！あなたは ${playerChoice} を選び、コンピュータは ${computerChoice} を選びました。`;
+                winCount++;
+                document.getElementById('resultImage').src = getRandomImage(winImages); // 勝ち画像を表示
+            } else {
+                message = `負け！あなたは ${playerChoice} を選び、コンピュータは ${computerChoice} を選びました。`;
+                loseCount++;
+                document.getElementById('resultImage').src = getRandomImage(loseImages); // 負け画像を表示
+            }
+
+            document.getElementById('message').textContent = message;
+            document.getElementById('score').textContent = `勝: ${winCount} 負: ${loseCount}`;
+
+            let computerChoiceImage = document.getElementById('computerChoiceImage');
+            let computerChoiceText = document.getElementById('computerChoiceText');
+            switch(computerChoice) {
+                case 'グー':
+                    computerChoiceImage.src = 'img/ぐー.jpg';
+                    computerChoiceText.textContent = 'グー';
+                    break;
+                case 'チョキ':
+                    computerChoiceImage.src = 'img/ちょき.jpg';
+                    computerChoiceText.textContent = 'チョキ';
+                    break;
+                case 'パー':
+                    computerChoiceImage.src = 'img/ぱー.jpg';
+                    computerChoiceText.textContent = 'パー';
+                    break;
+            }
+            computerChoiceImage.style.display = 'block';
+            computerChoiceText.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
